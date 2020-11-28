@@ -17,7 +17,12 @@ namespace CSVParseSample
                 Console.WriteLine("Usage:CSVParseSample Filename");
                 goto END;
             }
-            var list = CSVParser.Parse(args[0]);
+            (List<string[]> list, string errMsg) = CSVParser.Parse(args[0]);
+            if (list == null)
+            {
+                Console.WriteLine("Error:" + errMsg);
+                goto END;
+            }
 
             foreach (string[] fields in list)
             {

@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSVParseSample", "CSVParseS
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSVParser", "CSVParser\CSVParser.csproj", "{3FB0A9A6-0D89-4FC3-8C9F-5AD276194150}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSVParser.Tests", "CSVParser.Tests\CSVParser.Tests.csproj", "{4CBE9468-85F3-484F-ADE7-48D94F5FE9D9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{3FB0A9A6-0D89-4FC3-8C9F-5AD276194150}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3FB0A9A6-0D89-4FC3-8C9F-5AD276194150}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3FB0A9A6-0D89-4FC3-8C9F-5AD276194150}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4CBE9468-85F3-484F-ADE7-48D94F5FE9D9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4CBE9468-85F3-484F-ADE7-48D94F5FE9D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4CBE9468-85F3-484F-ADE7-48D94F5FE9D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4CBE9468-85F3-484F-ADE7-48D94F5FE9D9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
