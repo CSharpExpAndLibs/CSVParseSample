@@ -11,6 +11,84 @@ namespace CSVParserLib
 {
     public class CSVParser
     {
+
+        /// <summary>
+        /// CSVからParseされたリストのコンテンツを適切な数値型に変換し
+        /// たリストを作成する
+        /// </summary>
+        /// <typeparam name="T">
+        /// 変換先の数値型
+        /// </typeparam>
+        /// <param name="inText">
+        /// CSVからParseされた文字列配列のリスト
+        /// </param>
+        /// <param name="minLimit">
+        /// 変換先数値型で定義された許容最小値
+        /// </param>
+        /// <param name="maxLimit">
+        /// 変換先数値型で定義された許容最大値
+        /// </param>
+        /// <returns>
+        /// 成功：(数値型配列のリスト,null)
+        /// 失敗：(null,エラー文字列)
+        /// </returns>
+        /// <remarks>
+        /// 変換した数値型がmaxLimit又はminLimitを超えていたらエラーを返す
+        /// </remarks>
+        public static  (List<T[]>, string) ConvertStringToNumList<T>(List<string[]> inText, dynamic minLimit, dynamic maxLimit)
+        {
+            int rows = inText.Count;
+            int columns = inText[0].Length;
+            string errMsg = null;
+
+            List<T[]> retList = new List<T[]>();
+            for (int i = 0; i < rows; i++)
+            {
+                retList.Add(new T[columns]);
+            }
+
+            for (int i = 0; i < rows; i++)
+            {
+                for (int j = 0; j < columns; j++)
+                {
+                    dynamic a = null;
+
+                    if (typeof(T) == typeof(short))
+                    {
+                        a = Convert.ToInt16(inText[i][j]);
+                    }
+                    else if (typeof(T) == typeof(float))
+                    {
+                        a = Convert.ToSingle(inText[i][j]);
+                    }
+                    else if (typeof(T) == typeof(double))
+                    {
+                        a = Convert.ToDouble(inText[i][j]);
+                    }
+                    else if (typeof(T) == typeof(uint))
+                    {
+                        a = Convert.ToUInt32(inText[i][j]);
+                    }
+                    else if (typeof(T) == typeof(int))
+                    {
+                        a = Convert.ToInt32(inText[i][j]);
+                    }
+                    else if (typeof(T) == typeof(ushort))
+                    {
+                        a = Convert.ToUInt16(inText[i][j]);
+                    }
+                    if (a < minLimit || a > maxLimit)
+                    {
+                        return (null, "限界値を超えています");
+                    }
+                    retList[i][j] = a;
+                }
+            }
+            
+            return (retList, errMsg);
+        }
+
+
         /// <summary>
         /// CSVファイルをパーズして、行毎にフィールドを配列化したリストを作成する
         /// </summary>
