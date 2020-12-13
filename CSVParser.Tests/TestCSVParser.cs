@@ -492,7 +492,7 @@ namespace CSVParserLib.Tests
             Assert.AreEqual(true, erMsg.Contains("数値への変換に失敗しました。"));
 
             // 異常系2 最小値制約
-            (dutList, erMsg) = CSVParser.ConvertStringToNumList<float>(seedList, -1.99);
+            (dutList, erMsg) = CSVParser.ConvertStringToNumList<float>(seedList, -1.99f);
             Assert.AreEqual(null, dutList);
             Assert.AreEqual(true, erMsg.Contains("最小値を超えています"));
             (dutList, erMsg) = CSVParser.ConvertStringToNumList<double>(seedList, -1.99);
@@ -500,10 +500,10 @@ namespace CSVParserLib.Tests
             Assert.AreEqual(true, erMsg.Contains("最小値を超えています"));
 
             // 異常系3 最大値制約
-            (dutList, erMsg) = CSVParser.ConvertStringToNumList<float>(seedList, -20, 299.99);
+            (dutList, erMsg) = CSVParser.ConvertStringToNumList<float>(seedList, -20f, 299.99f);
             Assert.AreEqual(null, dutList);
             Assert.AreEqual(true, erMsg.Contains("最大値を超えています"));
-            (dutList, erMsg) = CSVParser.ConvertStringToNumList<double>(seedList, -20, 299.99);
+            (dutList, erMsg) = CSVParser.ConvertStringToNumList<double>(seedList, -20.0, 299.99);
             Assert.AreEqual(null, dutList);
             Assert.AreEqual(true, erMsg.Contains("最大値を超えています"));
         }
@@ -517,7 +517,7 @@ namespace CSVParserLib.Tests
 
             // ---- Int型の入力 ---
             seedList.Add(new string[] { "2", "-1", "123" });
-            seedList.Add(new string[] { "300", "-10", "1" });
+            seedList.Add(new string[] { "127", "-10", "1" });
 
             // 正常系1 intへ変換
             (dutList, erMsg) = CSVParser.ConvertStringToNumList<int>(seedList);
@@ -533,11 +533,56 @@ namespace CSVParserLib.Tests
                 }
             }
 
+            // short
+            (dutList, erMsg) = CSVParser.ConvertStringToNumList<short>(seedList);
+            Assert.AreEqual(null, erMsg);
+            Assert.AreNotEqual(null, dutList);
+            for (int i = 0; i < seedList.Count; i++)
+            {
+                for (int j = 0; j < seedList[i].Length; j++)
+                {
+                    Assert.AreEqual(
+                        Convert.ToInt16(seedList[i][j]),
+                        dutList[i][j]);
+                }
+            }
+
+            // sbyte
+            (dutList, erMsg) = CSVParser.ConvertStringToNumList<sbyte>(seedList);
+            Assert.AreEqual(null, erMsg);
+            Assert.AreNotEqual(null, dutList);
+            for (int i = 0; i < seedList.Count; i++)
+            {
+                for (int j = 0; j < seedList[i].Length; j++)
+                {
+                    Assert.AreEqual(
+                        Convert.ToSByte(seedList[i][j]),
+                        dutList[i][j]);
+                }
+            }
+
+
             // 正常系2 最小値/最大値の境界値
             (dutList, erMsg) = CSVParser.ConvertStringToNumList<int>(seedList, -10);
             Assert.AreEqual(null, erMsg);
             Assert.AreNotEqual(null, dutList);
-            (dutList, erMsg) = CSVParser.ConvertStringToNumList<int>(seedList, -10, 300);
+            (dutList, erMsg) = CSVParser.ConvertStringToNumList<int>(seedList, -10, 127);
+            Assert.AreEqual(null, erMsg);
+            Assert.AreNotEqual(null, dutList);
+
+            // short
+            (dutList, erMsg) = CSVParser.ConvertStringToNumList<short>(seedList, -10);
+            Assert.AreEqual(null, erMsg);
+            Assert.AreNotEqual(null, dutList);
+            (dutList, erMsg) = CSVParser.ConvertStringToNumList<short>(seedList, -10, 127);
+            Assert.AreEqual(null, erMsg);
+            Assert.AreNotEqual(null, dutList);
+
+            // sbyte
+            (dutList, erMsg) = CSVParser.ConvertStringToNumList<sbyte>(seedList, -10);
+            Assert.AreEqual(null, erMsg);
+            Assert.AreNotEqual(null, dutList);
+            (dutList, erMsg) = CSVParser.ConvertStringToNumList<sbyte>(seedList, -10, 127);
             Assert.AreEqual(null, erMsg);
             Assert.AreNotEqual(null, dutList);
 
@@ -546,8 +591,138 @@ namespace CSVParserLib.Tests
             Assert.AreEqual(null, dutList);
             Assert.AreEqual(true, erMsg.Contains("最小値を超えています"));
 
+            // short
+            (dutList, erMsg) = CSVParser.ConvertStringToNumList<short>(seedList, -9);
+            Assert.AreEqual(null, dutList);
+            Assert.AreEqual(true, erMsg.Contains("最小値を超えています"));
+
+            // sbyte
+            (dutList, erMsg) = CSVParser.ConvertStringToNumList<sbyte>(seedList, -9);
+            Assert.AreEqual(null, dutList);
+            Assert.AreEqual(true, erMsg.Contains("最小値を超えています"));
+
             // 異常系4 最大値制約
-            (dutList, erMsg) = CSVParser.ConvertStringToNumList<int>(seedList, -10, 299);
+            (dutList, erMsg) = CSVParser.ConvertStringToNumList<int>(seedList, -10, 126);
+            Assert.AreEqual(null, dutList);
+            Assert.AreEqual(true, erMsg.Contains("最大値を超えています"));
+
+            // short
+            (dutList, erMsg) = CSVParser.ConvertStringToNumList<short>(seedList, -10, 126);
+            Assert.AreEqual(null, dutList);
+            Assert.AreEqual(true, erMsg.Contains("最大値を超えています"));
+
+            // sbyte
+            (dutList, erMsg) = CSVParser.ConvertStringToNumList<sbyte>(seedList, -10, 126);
+            Assert.AreEqual(null, dutList);
+            Assert.AreEqual(true, erMsg.Contains("最大値を超えています"));
+        }
+
+
+        [TestMethod]
+        public void ConvertStringToNumListTest_Uint()
+        {
+            List<string[]> seedList = new List<string[]>();
+            string erMsg = null;
+            dynamic dutList = null;
+
+            // ---- Int型の入力 ---
+            seedList.Add(new string[] { "2", "0", "255" });
+            seedList.Add(new string[] { "127", "10", "1" });
+
+            // 正常系1 uintへ変換
+            (dutList, erMsg) = CSVParser.ConvertStringToNumList<uint>(seedList);
+            Assert.AreEqual(null, erMsg);
+            Assert.AreNotEqual(null, dutList);
+            for (int i = 0; i < seedList.Count; i++)
+            {
+                for (int j = 0; j < seedList[i].Length; j++)
+                {
+                    Assert.AreEqual(
+                        Convert.ToUInt32(seedList[i][j]),
+                        dutList[i][j]);
+                }
+            }
+
+            // ushort
+            (dutList, erMsg) = CSVParser.ConvertStringToNumList<ushort>(seedList);
+            Assert.AreEqual(null, erMsg);
+            Assert.AreNotEqual(null, dutList);
+            for (int i = 0; i < seedList.Count; i++)
+            {
+                for (int j = 0; j < seedList[i].Length; j++)
+                {
+                    Assert.AreEqual(
+                        Convert.ToUInt16(seedList[i][j]),
+                        dutList[i][j]);
+                }
+            }
+
+            // byte
+            (dutList, erMsg) = CSVParser.ConvertStringToNumList<byte>(seedList);
+            Assert.AreEqual(null, erMsg);
+            Assert.AreNotEqual(null, dutList);
+            for (int i = 0; i < seedList.Count; i++)
+            {
+                for (int j = 0; j < seedList[i].Length; j++)
+                {
+                    Assert.AreEqual(
+                        Convert.ToByte(seedList[i][j]),
+                        dutList[i][j]);
+                }
+            }
+
+
+            // 正常系2 最小値/最大値の境界値
+            (dutList, erMsg) = CSVParser.ConvertStringToNumList<uint>(seedList, 0);
+            Assert.AreEqual(null, erMsg);
+            Assert.AreNotEqual(null, dutList);
+            (dutList, erMsg) = CSVParser.ConvertStringToNumList<uint>(seedList, 0, 255);
+            Assert.AreEqual(null, erMsg);
+            Assert.AreNotEqual(null, dutList);
+
+            // short
+            (dutList, erMsg) = CSVParser.ConvertStringToNumList<ushort>(seedList, 0);
+            Assert.AreEqual(null, erMsg);
+            Assert.AreNotEqual(null, dutList);
+            (dutList, erMsg) = CSVParser.ConvertStringToNumList<ushort>(seedList, 0, 255);
+            Assert.AreEqual(null, erMsg);
+            Assert.AreNotEqual(null, dutList);
+
+            // byte
+            (dutList, erMsg) = CSVParser.ConvertStringToNumList<byte>(seedList, 0);
+            Assert.AreEqual(null, erMsg);
+            Assert.AreNotEqual(null, dutList);
+            (dutList, erMsg) = CSVParser.ConvertStringToNumList<byte>(seedList, 0, 255);
+            Assert.AreEqual(null, erMsg);
+            Assert.AreNotEqual(null, dutList);
+
+            // 異常系3 最小値制約
+            (dutList, erMsg) = CSVParser.ConvertStringToNumList<uint>(seedList, 1);
+            Assert.AreEqual(null, dutList);
+            Assert.AreEqual(true, erMsg.Contains("最小値を超えています"));
+
+            // short
+            (dutList, erMsg) = CSVParser.ConvertStringToNumList<ushort>(seedList, 1);
+            Assert.AreEqual(null, dutList);
+            Assert.AreEqual(true, erMsg.Contains("最小値を超えています"));
+
+            // sbyte
+            (dutList, erMsg) = CSVParser.ConvertStringToNumList<byte>(seedList, 1);
+            Assert.AreEqual(null, dutList);
+            Assert.AreEqual(true, erMsg.Contains("最小値を超えています"));
+
+            // 異常系4 最大値制約
+            (dutList, erMsg) = CSVParser.ConvertStringToNumList<uint>(seedList, 0, 254);
+            Assert.AreEqual(null, dutList);
+            Assert.AreEqual(true, erMsg.Contains("最大値を超えています"));
+
+            // short
+            (dutList, erMsg) = CSVParser.ConvertStringToNumList<ushort>(seedList, 0, 254);
+            Assert.AreEqual(null, dutList);
+            Assert.AreEqual(true, erMsg.Contains("最大値を超えています"));
+
+            // sbyte
+            (dutList, erMsg) = CSVParser.ConvertStringToNumList<byte>(seedList, 0, 254);
             Assert.AreEqual(null, dutList);
             Assert.AreEqual(true, erMsg.Contains("最大値を超えています"));
         }
@@ -615,20 +790,20 @@ namespace CSVParserLib.Tests
             Assert.AreEqual(true, erMsg.Contains("最大値を超えています"));
         }
 
-#if false
         [TestMethod]
         public void ParseToNumListTest_Int()
         {
             List<string[]> seedList = new List<string[]>();
             string erMsg = null;
             dynamic dutList = null;
+            string path = "Integer.csv";
 
             // ---- Int型の入力 ---
             seedList.Add(new string[] { "2", "-1", "123" });
-            seedList.Add(new string[] { "300", "-10", "1" });
+            seedList.Add(new string[] { "127", "-10", "1" });
 
             // 正常系1 intへ変換
-            (dutList, erMsg) = CSVParser.ConvertStringToNumList<int>(seedList);
+            (dutList, erMsg) = CSVParser.ParseToNumList<int>(path);
             Assert.AreEqual(null, erMsg);
             Assert.AreNotEqual(null, dutList);
             for (int i = 0; i < seedList.Count; i++)
@@ -641,26 +816,199 @@ namespace CSVParserLib.Tests
                 }
             }
 
-            // 正常系2 最小値/最大値の境界値
-            (dutList, erMsg) = CSVParser.ConvertStringToNumList<int>(seedList, -10);
+            // short
+            (dutList, erMsg) = CSVParser.ParseToNumList<short>(path);
             Assert.AreEqual(null, erMsg);
             Assert.AreNotEqual(null, dutList);
-            (dutList, erMsg) = CSVParser.ConvertStringToNumList<int>(seedList, -10, 300);
+            for (int i = 0; i < seedList.Count; i++)
+            {
+                for (int j = 0; j < seedList[i].Length; j++)
+                {
+                    Assert.AreEqual(
+                        Convert.ToInt16(seedList[i][j]),
+                        dutList[i][j]);
+                }
+            }
+
+            // sbyte
+            (dutList, erMsg) = CSVParser.ParseToNumList<sbyte>(path);
+            Assert.AreEqual(null, erMsg);
+            Assert.AreNotEqual(null, dutList);
+            for (int i = 0; i < seedList.Count; i++)
+            {
+                for (int j = 0; j < seedList[i].Length; j++)
+                {
+                    Assert.AreEqual(
+                        Convert.ToSByte(seedList[i][j]),
+                        dutList[i][j]);
+                }
+            }
+
+            // 正常系2 最小値/最大値の境界値
+            (dutList, erMsg) = CSVParser.ParseToNumList<int>(path, -10);
+            Assert.AreEqual(null, erMsg);
+            Assert.AreNotEqual(null, dutList);
+            (dutList, erMsg) = CSVParser.ParseToNumList<int>(path, -10, 127);
+            Assert.AreEqual(null, erMsg);
+            Assert.AreNotEqual(null, dutList);
+
+            // short
+            (dutList, erMsg) = CSVParser.ParseToNumList<short>(path, -10);
+            Assert.AreEqual(null, erMsg);
+            Assert.AreNotEqual(null, dutList);
+            (dutList, erMsg) = CSVParser.ParseToNumList<short>(path, -10, 127);
+            Assert.AreEqual(null, erMsg);
+            Assert.AreNotEqual(null, dutList);
+
+            // sbyte
+            (dutList, erMsg) = CSVParser.ParseToNumList<sbyte>(path, -10);
+            Assert.AreEqual(null, erMsg);
+            Assert.AreNotEqual(null, dutList);
+            (dutList, erMsg) = CSVParser.ParseToNumList<sbyte>(path, -10, 127);
             Assert.AreEqual(null, erMsg);
             Assert.AreNotEqual(null, dutList);
 
             // 異常系3 最小値制約
-            (dutList, erMsg) = CSVParser.ConvertStringToNumList<int>(seedList, -9);
+            (dutList, erMsg) = CSVParser.ParseToNumList<int>(path, -9);
+            Assert.AreEqual(null, dutList);
+            Assert.AreEqual(true, erMsg.Contains("最小値を超えています"));
+
+            // short
+            (dutList, erMsg) = CSVParser.ParseToNumList<short>(path, -9);
+            Assert.AreEqual(null, dutList);
+            Assert.AreEqual(true, erMsg.Contains("最小値を超えています"));
+
+            // sbyte
+            (dutList, erMsg) = CSVParser.ParseToNumList<sbyte>(path, -9);
             Assert.AreEqual(null, dutList);
             Assert.AreEqual(true, erMsg.Contains("最小値を超えています"));
 
             // 異常系4 最大値制約
-            (dutList, erMsg) = CSVParser.ConvertStringToNumList<int>(seedList, -10, 299);
+            (dutList, erMsg) = CSVParser.ParseToNumList<int>(path, -10, 126);
+            Assert.AreEqual(null, dutList);
+            Assert.AreEqual(true, erMsg.Contains("最大値を超えています"));
+
+            // short
+            (dutList, erMsg) = CSVParser.ParseToNumList<short>(path, -10, 126);
+            Assert.AreEqual(null, dutList);
+            Assert.AreEqual(true, erMsg.Contains("最大値を超えています"));
+
+            // sbyte
+            (dutList, erMsg) = CSVParser.ParseToNumList<sbyte>(path, -10, 126);
             Assert.AreEqual(null, dutList);
             Assert.AreEqual(true, erMsg.Contains("最大値を超えています"));
         }
 
-#endif
+        [TestMethod]
+        public void ParseToNumListTest_Uint()
+        {
+            List<string[]> seedList = new List<string[]>();
+            string erMsg = null;
+            dynamic dutList = null;
+            string path = "Unsigned.csv";
+
+            // ---- Int型の入力 ---
+            seedList.Add(new string[] { "2", "0", "255" });
+            seedList.Add(new string[] { "127", "10", "1" });
+
+            // 正常系1 uintへ変換
+            (dutList, erMsg) = CSVParser.ParseToNumList<uint>(path);
+            Assert.AreEqual(null, erMsg);
+            Assert.AreNotEqual(null, dutList);
+            for (int i = 0; i < seedList.Count; i++)
+            {
+                for (int j = 0; j < seedList[i].Length; j++)
+                {
+                    Assert.AreEqual(
+                        Convert.ToUInt32(seedList[i][j]),
+                        dutList[i][j]);
+                }
+            }
+
+            // ushort
+            (dutList, erMsg) = CSVParser.ParseToNumList<ushort>(path);
+            Assert.AreEqual(null, erMsg);
+            Assert.AreNotEqual(null, dutList);
+            for (int i = 0; i < seedList.Count; i++)
+            {
+                for (int j = 0; j < seedList[i].Length; j++)
+                {
+                    Assert.AreEqual(
+                        Convert.ToUInt16(seedList[i][j]),
+                        dutList[i][j]);
+                }
+            }
+
+            // byte
+            (dutList, erMsg) = CSVParser.ParseToNumList<byte>(path);
+            Assert.AreEqual(null, erMsg);
+            Assert.AreNotEqual(null, dutList);
+            for (int i = 0; i < seedList.Count; i++)
+            {
+                for (int j = 0; j < seedList[i].Length; j++)
+                {
+                    Assert.AreEqual(
+                        Convert.ToByte(seedList[i][j]),
+                        dutList[i][j]);
+                }
+            }
+
+
+            // 正常系2 最小値/最大値の境界値
+            (dutList, erMsg) = CSVParser.ParseToNumList<uint>(path, 0);
+            Assert.AreEqual(null, erMsg);
+            Assert.AreNotEqual(null, dutList);
+            (dutList, erMsg) = CSVParser.ParseToNumList<uint>(path, 0, 255);
+            Assert.AreEqual(null, erMsg);
+            Assert.AreNotEqual(null, dutList);
+
+            // short
+            (dutList, erMsg) = CSVParser.ParseToNumList<ushort>(path, 0);
+            Assert.AreEqual(null, erMsg);
+            Assert.AreNotEqual(null, dutList);
+            (dutList, erMsg) = CSVParser.ParseToNumList<ushort>(path, 0, 255);
+            Assert.AreEqual(null, erMsg);
+            Assert.AreNotEqual(null, dutList);
+
+            // byte
+            (dutList, erMsg) = CSVParser.ParseToNumList<byte>(path, 0);
+            Assert.AreEqual(null, erMsg);
+            Assert.AreNotEqual(null, dutList);
+            (dutList, erMsg) = CSVParser.ParseToNumList<byte>(path, 0, 255);
+            Assert.AreEqual(null, erMsg);
+            Assert.AreNotEqual(null, dutList);
+
+            // 異常系3 最小値制約
+            (dutList, erMsg) = CSVParser.ParseToNumList<uint>(path, 1);
+            Assert.AreEqual(null, dutList);
+            Assert.AreEqual(true, erMsg.Contains("最小値を超えています"));
+
+            // short
+            (dutList, erMsg) = CSVParser.ParseToNumList<ushort>(path, 1);
+            Assert.AreEqual(null, dutList);
+            Assert.AreEqual(true, erMsg.Contains("最小値を超えています"));
+
+            // sbyte
+            (dutList, erMsg) = CSVParser.ParseToNumList<byte>(path, 1);
+            Assert.AreEqual(null, dutList);
+            Assert.AreEqual(true, erMsg.Contains("最小値を超えています"));
+
+            // 異常系4 最大値制約
+            (dutList, erMsg) = CSVParser.ParseToNumList<uint>(path, 0, 254);
+            Assert.AreEqual(null, dutList);
+            Assert.AreEqual(true, erMsg.Contains("最大値を超えています"));
+
+            // short
+            (dutList, erMsg) = CSVParser.ParseToNumList<ushort>(path, 0, 254);
+            Assert.AreEqual(null, dutList);
+            Assert.AreEqual(true, erMsg.Contains("最大値を超えています"));
+
+            // sbyte
+            (dutList, erMsg) = CSVParser.ParseToNumList<byte>(path, 0, 254);
+            Assert.AreEqual(null, dutList);
+            Assert.AreEqual(true, erMsg.Contains("最大値を超えています"));
+        }
+
 
     }
 }

@@ -59,8 +59,8 @@ namespace CSVParserLib
         /// </remarks>
         public static (List<T[]> list, string msg) ParseToNumList<T>(
             string path,
-            dynamic minLimit = null,
-            dynamic maxLimit = null,
+            object minLimit = null,
+            object maxLimit = null,
             int rowCnt = -1,
             int columnCnt = -1,
             string delimiter = ",",
@@ -85,23 +85,7 @@ namespace CSVParserLib
 
             // T型の数値リストへ変換する
             List<T[]> numList = null;
-            if (minLimit != null && maxLimit != null)
-            {
-                (numList, errMsg) = ConvertStringToNumList<T>(textList, (T)minLimit, (T)maxLimit);
-            }
-            else if (minLimit != null && maxLimit == null)
-            {
-                (numList, errMsg) = ConvertStringToNumList<T>(textList, (T)minLimit);
-            }
-            else if (minLimit == null && maxLimit != null)
-            {
-                (numList, errMsg) = ConvertStringToNumList<T>(textList, null, (T)maxLimit);
-            }
-            else
-            {
-                (numList, errMsg) = ConvertStringToNumList<T>(textList);
-            }
-            
+            (numList, errMsg) = ConvertStringToNumList<T>(textList, minLimit, maxLimit);
 
             return (numList, errMsg);
 
