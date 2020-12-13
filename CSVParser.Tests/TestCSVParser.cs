@@ -63,9 +63,6 @@ namespace CSVParserLib.Tests
         [TestMethod]
         public void Test_Parse_Normal()
         {
-            //
-            // TODO: テスト ロジックをここに追加してください
-            //
             // 期待値のリスト
             List<string[]> expList = new List<string[]>();
             expList.Add(new string[] { "Paul", "McCartney", "男", "80", "London,\nEngland" });
@@ -96,8 +93,9 @@ namespace CSVParserLib.Tests
             // CSV Parser(stream,...)
             using (var stream = new FileStream("Normal.csv", FileMode.Open))
             {
-                resultList = CSVParser.Parse(stream);
+                (resultList, errMsg) = CSVParser.Parse(stream);
                 Assert.AreNotEqual(null, resultList);
+                Assert.AreEqual(null, errMsg);
 
                 row = 0;
                 foreach (var line in expList)
@@ -149,8 +147,9 @@ namespace CSVParserLib.Tests
             // CSV Parser(stream,...)
             using (var stream = new FileStream("EmptyLine.csv", FileMode.Open))
             {
-                resultList = CSVParser.Parse(stream);
+                (resultList, errMsg) = CSVParser.Parse(stream);
                 Assert.AreNotEqual(null, resultList);
+                Assert.AreEqual(null, errMsg);
 
                 row = 0;
                 foreach (var line in expList)
@@ -202,8 +201,9 @@ namespace CSVParserLib.Tests
             // CSV Parser(stream,...)
             using (var stream = new FileStream("EmptyElement.csv", FileMode.Open))
             {
-                resultList = CSVParser.Parse(stream);
+                (resultList, errMsg) = CSVParser.Parse(stream);
                 Assert.AreNotEqual(null, resultList);
+                Assert.AreEqual(null, errMsg);
 
                 row = 0;
                 foreach (var line in expList)
@@ -356,14 +356,14 @@ namespace CSVParserLib.Tests
             // CSV Parser(path,...)、行数Over
             List<string[]> resultList = null;
             string errMsg = null;
-            (resultList, errMsg) = CSVParser.Parse("Normal.csv", 2, 5);
+            (resultList, errMsg) = CSVParser.Parse("Normal.csv", 2);
 
             Assert.AreEqual(null, resultList);
             Assert.AreEqual("規定行数=2 に一致しません", errMsg);
 
             // 行数 Under
             errMsg = null;
-            (resultList, errMsg) = CSVParser.Parse("Normal.csv", 4, 5);
+            (resultList, errMsg) = CSVParser.Parse("Normal.csv", 4);
             Assert.AreEqual(null, resultList);
             Assert.AreEqual("規定行数=4 に一致しません", errMsg);
 
@@ -372,7 +372,7 @@ namespace CSVParserLib.Tests
             errMsg = null;
             using (var stream = new FileStream("Normal.csv", FileMode.Open))
             {
-                (resultList, errMsg) = CSVParser.Parse(stream, 2, 5);
+                (resultList, errMsg) = CSVParser.Parse(stream, 2);
                 Assert.AreEqual(null, resultList);
                 Assert.AreEqual("規定行数=2 に一致しません", errMsg);
 
@@ -380,7 +380,7 @@ namespace CSVParserLib.Tests
             errMsg = null;
             using (var stream = new FileStream("Normal.csv", FileMode.Open))
             {
-                (resultList, errMsg) = CSVParser.Parse(stream, 4, 5);
+                (resultList, errMsg) = CSVParser.Parse(stream, 4);
                 Assert.AreEqual(null, resultList);
                 Assert.AreEqual("規定行数=4 に一致しません", errMsg);
 
@@ -392,7 +392,7 @@ namespace CSVParserLib.Tests
         public void Test_ParseWithCnt_ColumnCntErr()
         {
             //
-            // 行数が合わない時のエラー確認
+            // 列数が合わない時のエラー確認
             //
             // 期待値のリスト
             List<string[]> expList = new List<string[]>();
@@ -406,19 +406,19 @@ namespace CSVParserLib.Tests
             (resultList, errMsg) = CSVParser.Parse("Normal.csv", 3, 4);
 
             Assert.AreEqual(null, resultList);
-            Assert.AreEqual(":規定列数=4 に一致しないか無効なデータが含まれています", errMsg);
+            Assert.AreEqual("規定列数=4 に一致しないか無効なデータが含まれています", errMsg);
 
             // 行数 Under
             errMsg = null;
             (resultList, errMsg) = CSVParser.Parse("Normal.csv", 3, 6);
             Assert.AreEqual(null, resultList);
-            Assert.AreEqual(":規定列数=6 に一致しないか無効なデータが含まれています", errMsg);
+            Assert.AreEqual("規定列数=6 に一致しないか無効なデータが含まれています", errMsg);
 
             // エレメントが抜けてもエラー
             errMsg = null;
             (resultList, errMsg) = CSVParser.Parse("EmptyElement.csv", 3, 5);
             Assert.AreEqual(null, resultList);
-            Assert.AreEqual(":規定列数=5 に一致しないか無効なデータが含まれています", errMsg);
+            Assert.AreEqual("規定列数=5 に一致しないか無効なデータが含まれています", errMsg);
 
 
             // CSV Parser(stream,...)
@@ -427,7 +427,7 @@ namespace CSVParserLib.Tests
             {
                 (resultList, errMsg) = CSVParser.Parse(stream, 3, 4);
                 Assert.AreEqual(null, resultList);
-                Assert.AreEqual(":規定列数=4 に一致しないか無効なデータが含まれています", errMsg);
+                Assert.AreEqual("規定列数=4 に一致しないか無効なデータが含まれています", errMsg);
 
             }
             errMsg = null;
@@ -435,7 +435,7 @@ namespace CSVParserLib.Tests
             {
                 (resultList, errMsg) = CSVParser.Parse(stream, 3, 6);
                 Assert.AreEqual(null, resultList);
-                Assert.AreEqual(":規定列数=6 に一致しないか無効なデータが含まれています", errMsg);
+                Assert.AreEqual("規定列数=6 に一致しないか無効なデータが含まれています", errMsg);
 
             }
             errMsg = null;
@@ -443,11 +443,224 @@ namespace CSVParserLib.Tests
             {
                 (resultList, errMsg) = CSVParser.Parse(stream, 3, 5);
                 Assert.AreEqual(null, resultList);
-                Assert.AreEqual(":規定列数=5 に一致しないか無効なデータが含まれています", errMsg);
+                Assert.AreEqual("規定列数=5 に一致しないか無効なデータが含まれています", errMsg);
 
             }
 
         }
+
+        [TestMethod]
+        public void ConvertStringToNumListTest_FloatDouble()
+        {
+            List<string[]> seedList = new List<string[]>();
+            string erMsg = null;
+            dynamic dutList = null;
+
+            // ---- double/float型の入力 ---
+            seedList.Add(new string[] { "2.3", "-1", "123" });
+            seedList.Add(new string[] { "300", "-2", "0.9" });
+
+            // 正常系1 doubleへ変換
+            (dutList, erMsg) = CSVParser.ConvertStringToNumList<double>(seedList);
+            Assert.AreEqual(null, erMsg);
+            Assert.AreNotEqual(null, dutList);
+            for (int i = 0; i < seedList.Count; i++)
+            {
+                for (int j = 0; j < seedList[i].Length; j++)
+                {
+                    Assert.AreEqual(
+                        Convert.ToDouble(seedList[i][j]),
+                        dutList[i][j]);
+                }
+            }
+            // 正常系2 floatへ変換
+            (dutList, erMsg) = CSVParser.ConvertStringToNumList<float>(seedList);
+            Assert.AreEqual(null, erMsg);
+            Assert.AreNotEqual(null, dutList);
+            for (int i = 0; i < seedList.Count; i++)
+            {
+                for (int j = 0; j < seedList[i].Length; j++)
+                {
+                    Assert.AreEqual(
+                        Convert.ToSingle(seedList[i][j]),
+                        dutList[i][j]);
+                }
+            }
+            // 異常系1 整数へ変換
+            (dutList, erMsg) = CSVParser.ConvertStringToNumList<int>(seedList);
+            Assert.AreEqual(null, dutList);
+            Assert.AreEqual(true, erMsg.Contains("数値への変換に失敗しました。"));
+
+            // 異常系2 最小値制約
+            (dutList, erMsg) = CSVParser.ConvertStringToNumList<float>(seedList, -1.99);
+            Assert.AreEqual(null, dutList);
+            Assert.AreEqual(true, erMsg.Contains("最小値を超えています"));
+            (dutList, erMsg) = CSVParser.ConvertStringToNumList<double>(seedList, -1.99);
+            Assert.AreEqual(null, dutList);
+            Assert.AreEqual(true, erMsg.Contains("最小値を超えています"));
+
+            // 異常系3 最大値制約
+            (dutList, erMsg) = CSVParser.ConvertStringToNumList<float>(seedList, -20, 299.99);
+            Assert.AreEqual(null, dutList);
+            Assert.AreEqual(true, erMsg.Contains("最大値を超えています"));
+            (dutList, erMsg) = CSVParser.ConvertStringToNumList<double>(seedList, -20, 299.99);
+            Assert.AreEqual(null, dutList);
+            Assert.AreEqual(true, erMsg.Contains("最大値を超えています"));
+        }
+
+        [TestMethod]
+        public void ConvertStringToNumListTest_Int()
+        {
+            List<string[]> seedList = new List<string[]>();
+            string erMsg = null;
+            dynamic dutList = null;
+
+            // ---- Int型の入力 ---
+            seedList.Add(new string[] { "2", "-1", "123" });
+            seedList.Add(new string[] { "300", "-10", "1" });
+
+            // 正常系1 intへ変換
+            (dutList, erMsg) = CSVParser.ConvertStringToNumList<int>(seedList);
+            Assert.AreEqual(null, erMsg);
+            Assert.AreNotEqual(null, dutList);
+            for (int i = 0; i < seedList.Count; i++)
+            {
+                for (int j = 0; j < seedList[i].Length; j++)
+                {
+                    Assert.AreEqual(
+                        Convert.ToInt32(seedList[i][j]),
+                        dutList[i][j]);
+                }
+            }
+
+            // 正常系2 最小値/最大値の境界値
+            (dutList, erMsg) = CSVParser.ConvertStringToNumList<int>(seedList, -10);
+            Assert.AreEqual(null, erMsg);
+            Assert.AreNotEqual(null, dutList);
+            (dutList, erMsg) = CSVParser.ConvertStringToNumList<int>(seedList, -10, 300);
+            Assert.AreEqual(null, erMsg);
+            Assert.AreNotEqual(null, dutList);
+
+            // 異常系3 最小値制約
+            (dutList, erMsg) = CSVParser.ConvertStringToNumList<int>(seedList, -9);
+            Assert.AreEqual(null, dutList);
+            Assert.AreEqual(true, erMsg.Contains("最小値を超えています"));
+
+            // 異常系4 最大値制約
+            (dutList, erMsg) = CSVParser.ConvertStringToNumList<int>(seedList, -10, 299);
+            Assert.AreEqual(null, dutList);
+            Assert.AreEqual(true, erMsg.Contains("最大値を超えています"));
+        }
+
+        [TestMethod]
+        public void ParseToNumListTest_FloatDouble()
+        {
+            List<string[]> seedList = new List<string[]>();
+            string erMsg = null;
+            dynamic dutList = null;
+            string path = "DoubleFloat.csv";
+
+            // ---- double/float型の入力 ---
+            //  Literalからの変換と文字列からの変換精度が一致しない
+            //  可能性を考慮して、期待値もCVSファイルと同じ文字列から
+            //  DUTと同じ変換メソッドを用いて取得する。
+            seedList.Add(new string[] { "2.3", "-1", "123" });
+            seedList.Add(new string[] { "300", "-2", "0.9" });
+
+            // 正常系1 doubleへ変換
+            (dutList, erMsg) = CSVParser.ParseToNumList<double>(path);
+            Assert.AreEqual(null, erMsg);
+            Assert.AreNotEqual(null, dutList);
+            for (int i = 0; i < seedList.Count; i++)
+            {
+                for (int j = 0; j < seedList[i].Length; j++)
+                {
+                    Assert.AreEqual(
+                        Convert.ToDouble(seedList[i][j]),
+                        dutList[i][j]);
+                }
+            }
+            // 正常系2 floatへ変換
+            (dutList, erMsg) = CSVParser.ParseToNumList<float>(path);
+            Assert.AreEqual(null, erMsg);
+            Assert.AreNotEqual(null, dutList);
+            for (int i = 0; i < seedList.Count; i++)
+            {
+                for (int j = 0; j < seedList[i].Length; j++)
+                {
+                    Assert.AreEqual(
+                        Convert.ToSingle(seedList[i][j]),
+                        dutList[i][j]);
+                }
+            }
+            // 異常系1 整数へ変換
+            (dutList, erMsg) = CSVParser.ParseToNumList<int>(path);
+            Assert.AreEqual(null, dutList);
+            Assert.AreEqual(true, erMsg.Contains("数値への変換に失敗しました。"));
+
+            // 異常系2 最小値制約
+            (dutList, erMsg) = CSVParser.ParseToNumList<float>(path, -1.99);
+            Assert.AreEqual(null, dutList);
+            Assert.AreEqual(true, erMsg.Contains("最小値を超えています"));
+            (dutList, erMsg) = CSVParser.ParseToNumList<double>(path, -1.99);
+            Assert.AreEqual(null, dutList);
+            Assert.AreEqual(true, erMsg.Contains("最小値を超えています"));
+
+            // 異常系3 最大値制約
+            (dutList, erMsg) = CSVParser.ParseToNumList<float>(path, -20, 299.99);
+            Assert.AreEqual(null, dutList);
+            Assert.AreEqual(true, erMsg.Contains("最大値を超えています"));
+            (dutList, erMsg) = CSVParser.ConvertStringToNumList<double>(seedList, -20, 299.99);
+            Assert.AreEqual(null, dutList);
+            Assert.AreEqual(true, erMsg.Contains("最大値を超えています"));
+        }
+
+#if false
+        [TestMethod]
+        public void ParseToNumListTest_Int()
+        {
+            List<string[]> seedList = new List<string[]>();
+            string erMsg = null;
+            dynamic dutList = null;
+
+            // ---- Int型の入力 ---
+            seedList.Add(new string[] { "2", "-1", "123" });
+            seedList.Add(new string[] { "300", "-10", "1" });
+
+            // 正常系1 intへ変換
+            (dutList, erMsg) = CSVParser.ConvertStringToNumList<int>(seedList);
+            Assert.AreEqual(null, erMsg);
+            Assert.AreNotEqual(null, dutList);
+            for (int i = 0; i < seedList.Count; i++)
+            {
+                for (int j = 0; j < seedList[i].Length; j++)
+                {
+                    Assert.AreEqual(
+                        Convert.ToInt32(seedList[i][j]),
+                        dutList[i][j]);
+                }
+            }
+
+            // 正常系2 最小値/最大値の境界値
+            (dutList, erMsg) = CSVParser.ConvertStringToNumList<int>(seedList, -10);
+            Assert.AreEqual(null, erMsg);
+            Assert.AreNotEqual(null, dutList);
+            (dutList, erMsg) = CSVParser.ConvertStringToNumList<int>(seedList, -10, 300);
+            Assert.AreEqual(null, erMsg);
+            Assert.AreNotEqual(null, dutList);
+
+            // 異常系3 最小値制約
+            (dutList, erMsg) = CSVParser.ConvertStringToNumList<int>(seedList, -9);
+            Assert.AreEqual(null, dutList);
+            Assert.AreEqual(true, erMsg.Contains("最小値を超えています"));
+
+            // 異常系4 最大値制約
+            (dutList, erMsg) = CSVParser.ConvertStringToNumList<int>(seedList, -10, 299);
+            Assert.AreEqual(null, dutList);
+            Assert.AreEqual(true, erMsg.Contains("最大値を超えています"));
+        }
+
+#endif
 
     }
 }
