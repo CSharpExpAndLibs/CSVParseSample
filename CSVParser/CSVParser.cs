@@ -13,6 +13,102 @@ namespace CSVParserLib
     {
 
         /// <summary>
+        /// CSVファイルをParseした後、コンテンツを適切な数値型に変換し
+        /// たリストを作成する。(Parse + ConvertStringToNumList)
+        /// </summary>
+        /// <typeparam name="T">
+        /// 変換先の数値型
+        /// </typeparam>
+        /// <param name="path">
+        /// CSVファイルへのパス
+        /// </param>
+        /// <param name="minLimit">
+        /// 変換先数値型で定義された許容最小値
+        /// (省略時は無効)
+        /// </param>
+        /// <param name="maxLimit">
+        /// 変換先数値型で定義された許容最大値
+        /// (省略時は無効)
+        /// </param>
+        /// <param name="rowCnt">
+        /// 規定行数
+        /// Default:-1(規定なし)
+        /// </param>
+        /// <param name="columnCnt">
+        /// 規定列数
+        /// Default:-1(規定なし)
+        /// </param>
+        /// <param name="delimiter">
+        /// フィールド区切りデリミタ
+        /// Default:","
+        /// </param>
+        /// <param name="comment">
+        /// コメント文字
+        /// Deafualt:"#"
+        /// </param>
+        /// <param name="encode">
+        /// エンコード
+        /// Deafult:null(Shift-JIS)
+        /// </param>
+        /// <returns>
+        /// 成功：(数値型配列のリスト,null)
+        /// 失敗：(null,エラー文字列)
+        /// </returns>
+        /// <remarks>
+        /// 変換した数値型がmaxLimit又はminLimitを超えていたらエラーを返す
+        /// </remarks>
+        public static (List<T[]> list, string msg) ParseToNumList<T>(
+            string path,
+            dynamic minLimit = null,
+            dynamic maxLimit = null,
+            int rowCnt = -1,
+            int columnCnt = -1,
+            string delimiter = ",",
+            string comment = "#",
+            Encoding encode = null)
+        {
+            List<string[]> textList = null;
+            string errMsg = null;
+
+            // CSVファイルをパーズしてリスト取得
+            (textList, errMsg) = Parse(
+                path,
+                rowCnt,
+                columnCnt,
+                delimiter,
+                comment,
+                encode);
+            if (textList == null)
+            {
+                return (null, errMsg);
+            }
+
+            // T型の数値リストへ変換する
+            List<T[]> numList = null;
+            if (minLimit != null && maxLimit != null)
+            {
+                (numList, errMsg) = ConvertStringToNumList<T>(textList, (T)minLimit, (T)maxLimit);
+            }
+            else if (minLimit != null && maxLimit == null)
+            {
+                (numList, errMsg) = ConvertStringToNumList<T>(textList, (T)minLimit);
+            }
+            else if (minLimit == null && maxLimit != null)
+            {
+                (numList, errMsg) = ConvertStringToNumList<T>(textList, null, (T)maxLimit);
+            }
+            else
+            {
+                (numList, errMsg) = ConvertStringToNumList<T>(textList);
+            }
+            
+
+            return (numList, errMsg);
+
+
+        }
+
+        /// <summary>
         /// CSVからParseされたリストのコンテンツを適切な数値型に変換し
         /// たリストを作成する
         /// </summary>
@@ -24,9 +120,11 @@ namespace CSVParserLib
         /// </param>
         /// <param name="minLimit">
         /// 変換先数値型で定義された許容最小値
+        /// (省略時は無効)
         /// </param>
         /// <param name="maxLimit">
         /// 変換先数値型で定義された許容最大値
+        /// (省略時は無効)
         /// </param>
         /// <returns>
         /// 成功：(数値型配列のリスト,null)
@@ -35,7 +133,10 @@ namespace CSVParserLib
         /// <remarks>
         /// 変換した数値型がmaxLimit又はminLimitを超えていたらエラーを返す
         /// </remarks>
-        public static  (List<T[]>, string) ConvertStringToNumList<T>(List<string[]> inText, dynamic minLimit, dynamic maxLimit)
+        public static (List<T[]> list, string msg) ConvertStringToNumList<T>(
+            List<string[]> inText,
+            dynamic minLimit = null,
+            dynamic maxLimit = null)
         {
             int rows = inText.Count;
             int columns = inText[0].Length;
@@ -53,33 +154,59 @@ namespace CSVParserLib
                 {
                     dynamic a = null;
 
-                    if (typeof(T) == typeof(short))
+                    try
                     {
-                        a = Convert.ToInt16(inText[i][j]);
+                        if (typeof(T) == typeof(short))
+                        {
+                            a = Convert.ToInt16(inText[i][j]);
+                        }
+                        else if (typeof(T) == typeof(float))
+                        {
+                            a = Convert.ToSingle(inText[i][j]);
+                        }
+                        else if (typeof(T) == typeof(byte))
+                        {
+                            a = Convert.ToByte(inText[i][j]);
+                        }
+                        else if (typeof(T) == typeof(sbyte))
+                        {
+                            a = Convert.ToSByte(inText[i][j]);
+                        }
+                        else if (typeof(T) == typeof(double))
+                        {
+                            a = Convert.ToDouble(inText[i][j]);
+                        }
+                        else if (typeof(T) == typeof(uint))
+                        {
+                            a = Convert.ToUInt32(inText[i][j]);
+                        }
+                        else if (typeof(T) == typeof(int))
+                        {
+                            a = Convert.ToInt32(inText[i][j]);
+                        }
+                        else if (typeof(T) == typeof(ushort))
+                        {
+                            a = Convert.ToUInt16(inText[i][j]);
+                        }
                     }
-                    else if (typeof(T) == typeof(float))
+                    catch (Exception e)
                     {
-                        a = Convert.ToSingle(inText[i][j]);
+                        return (null, "数値への変換に失敗しました。" +
+                            e.Message);
                     }
-                    else if (typeof(T) == typeof(double))
+                    if (maxLimit != null)
                     {
-                        a = Convert.ToDouble(inText[i][j]);
+                        if (a > maxLimit)
+                        {
+                            return (null, "最大値を超えています");
+                        }
                     }
-                    else if (typeof(T) == typeof(uint))
+                    if (minLimit != null)
                     {
-                        a = Convert.ToUInt32(inText[i][j]);
-                    }
-                    else if (typeof(T) == typeof(int))
-                    {
-                        a = Convert.ToInt32(inText[i][j]);
-                    }
-                    else if (typeof(T) == typeof(ushort))
-                    {
-                        a = Convert.ToUInt16(inText[i][j]);
-                    }
-                    if (a < minLimit || a > maxLimit)
-                    {
-                        return (null, "限界値を超えています");
+                        if (a < minLimit)
+                        {
+                            return (null, "最小値を超えています");
+                        }
                     }
                     retList[i][j] = a;
                 }
@@ -89,45 +216,6 @@ namespace CSVParserLib
         }
 
 
-        /// <summary>
-        /// CSVファイルをパーズして、行毎にフィールドを配列化したリストを作成する
-        /// </summary>
-        /// <param name="path">
-        /// CSVファイルへのパス
-        /// </param>
-        /// <param name="delimiter">
-        /// フィールド区切りデリミタ
-        /// Default:","
-        /// </param>
-        /// <param name="comment">
-        /// コメント文字
-        /// Deafualt:"#"
-        /// </param>
-        /// <param name="encode">
-        /// エンコード
-        /// Deafult:null(Shift-JIS)
-        /// </param>
-        /// <returns>
-        /// 成功：(リスト,null)
-        /// 失敗：(null,エラーmsg)
-        /// </returns>
-        public static (List<string[]>, string) Parse(string path, string delimiter = ",",
-            string comment = "#", Encoding encode = null)
-        {
-            if (!File.Exists(path))
-                return (null, "ファイルが存在しない");
-
-            // Default = SHIFT_JIS
-            if (encode == null)
-                encode = Encoding.GetEncoding(932);
-
-
-            using (TextFieldParser parser = new TextFieldParser(path, encode))
-            {
-                List<string[]> outList = ParseCommon(parser, delimiter, comment);
-                return (outList, null);
-            }
-        }
 
         /// <summary>
         /// CSVファイルをパーズして、行毎にフィールドを配列化したリストを作成する
@@ -137,9 +225,11 @@ namespace CSVParserLib
         /// </param>
         /// <param name="rowCnt">
         /// 規定行数
+        /// Default:-1(規定なし)
         /// </param>
         /// <param name="columnCnt">
         /// 規定列数
+        /// Default:-1(規定なし)
         /// </param>
         /// <param name="delimiter">
         /// フィールド区切りデリミタ
@@ -159,8 +249,8 @@ namespace CSVParserLib
         /// </returns>
         public static (List<string[]>, string) Parse(
             string path,
-            int rowCnt,
-            int columnCnt,
+            int rowCnt = -1,
+            int columnCnt = -1,
             string delimiter = ",",
             string comment = "#",
             Encoding encode = null)
@@ -184,42 +274,6 @@ namespace CSVParserLib
 
         }
 
-        /// <summary>
-        /// CSVストリームをパーズして、行毎にフィールドを配列化したリストを作成する
-        /// </summary>
-        /// <param name="stream">
-        /// CSVストリーム
-        /// </param>
-        /// <param name="delimiter">
-        /// フィールド区切りデリミタ
-        /// Default:","
-        /// </param>
-        /// <param name="comment">
-        /// コメント文字
-        /// Deafualt:"#"
-        /// </param>
-        /// <param name="encode">
-        /// エンコード
-        /// Deafult:null(Shift-JIS)
-        /// </param>
-        /// <returns>
-        /// 成功：(リスト,null)
-        /// 失敗：(null,エラーmsg)
-        /// </returns>
-        public static List<string[]> Parse(Stream stream, string delimiter = ",",
-            string comment = "#", Encoding encode = null)
-        {
-            // Default = SHIFT_JIS
-            if (encode == null)
-                encode = Encoding.GetEncoding(932);
-
-            using (TextFieldParser parser = new TextFieldParser(stream, encode))
-            {
-                List<string[]> outList = ParseCommon(parser, delimiter, comment);
-                return outList;
-            }
-
-        }
 
         /// <summary>
         /// CSVストリームをパーズして、行毎にフィールドを配列化したリストを作成する
@@ -253,15 +307,19 @@ namespace CSVParserLib
         /// </returns>
         public static (List<string[]>, string) Parse(
             Stream stream,
-            int rowCnt,
-            int columnCnt,
+            int rowCnt = -1,
+            int columnCnt = -1,
             string delimiter = ",",
             string comment = "#",
             Encoding encode = null)
         {
             List<string[]> parsed = null;
             string err = null;
-            parsed = Parse(stream, delimiter, comment, encode);
+            (parsed, err) = Parse(stream, delimiter, comment, encode);
+            if (err != null)
+            {
+                return (null, err);
+            }
 
             err = CheckRowsAndColumnCnt(parsed, rowCnt, columnCnt);
             if (err != null)
@@ -273,51 +331,137 @@ namespace CSVParserLib
 
         }
 
-        static string CheckRowsAndColumnCnt(List<string[]> parsed, int rowCnt, int columnCnt)
+        /// <summary>
+        /// CSVファイルをパーズして、行毎にフィールドを配列化したリストを作成する
+        /// </summary>
+        /// <param name="path">
+        /// CSVファイルへのパス
+        /// </param>
+        /// <param name="delimiter">
+        /// フィールド区切りデリミタ
+        /// Default:","
+        /// </param>
+        /// <param name="comment">
+        /// コメント文字
+        /// Deafualt:"#"
+        /// </param>
+        /// <param name="encode">
+        /// エンコード
+        /// Deafult:null(Shift-JIS)
+        /// </param>
+        /// <returns>
+        /// 成功：(リスト,null)
+        /// 失敗：(null,エラーmsg)
+        /// </returns>
+        static (List<string[]>, string) Parse(
+            string path,
+            string delimiter = ",",
+            string comment = "#",
+            Encoding encode = null)
         {
-            string err = null;
+            if (!File.Exists(path))
+                return (null, "ファイルが存在しない");
 
-            bool isOk = true;
-            if (parsed.Count != rowCnt)
+            // Default = SHIFT_JIS
+            if (encode == null)
+                encode = Encoding.GetEncoding(932);
+
+
+            using (TextFieldParser parser = new TextFieldParser(path, encode))
             {
-                err = $"規定行数={rowCnt} に一致しません";
-                isOk = false;
-                parsed = null;
-                return err;
+                return ParseCommon(parser, delimiter, comment);
+            }
+        }
+
+        /// <summary>
+        /// CSVストリームをパーズして、行毎にフィールドを配列化したリストを作成する
+        /// </summary>
+        /// <param name="stream">
+        /// CSVストリーム
+        /// </param>
+        /// <param name="delimiter">
+        /// フィールド区切りデリミタ
+        /// Default:","
+        /// </param>
+        /// <param name="comment">
+        /// コメント文字
+        /// Deafualt:"#"
+        /// </param>
+        /// <param name="encode">
+        /// エンコード
+        /// Deafult:null(Shift-JIS)
+        /// </param>
+        /// <returns>
+        /// 成功：(リスト,null)
+        /// 失敗：(null,エラーmsg)
+        /// </returns>
+        static (List<string[]>, string) Parse(
+            Stream stream,
+            string delimiter = ",",
+            string comment = "#",
+            Encoding encode = null)
+        {
+            // Default = SHIFT_JIS
+            if (encode == null)
+                encode = Encoding.GetEncoding(932);
+
+            using (TextFieldParser parser = new TextFieldParser(stream, encode))
+            {
+                return ParseCommon(parser, delimiter, comment);
             }
 
-            foreach (var line in parsed)
+        }
+
+
+        static string CheckRowsAndColumnCnt(
+            List<string[]> parsed,
+            int rowCnt,
+            int columnCnt)
+        {
+            if (rowCnt > 0 && parsed.Count != rowCnt)
             {
-                if (line.Length != columnCnt)
+                return $"規定行数={rowCnt} に一致しません";
+            }
+
+            if (columnCnt > 0)
+            {
+                bool isOk = true;
+                foreach (var line in parsed)
                 {
-                    isOk = false;
-                    break;
-                }
-                foreach (var s in line)
-                {
-                    if (string.IsNullOrEmpty(s))
+                    if (line.Length != columnCnt)
                     {
                         isOk = false;
                         break;
                     }
+                    foreach (var s in line)
+                    {
+                        if (string.IsNullOrEmpty(s))
+                        {
+                            isOk = false;
+                            break;
+                        }
+                    }
+                    if (!isOk)
+                    {
+                        break;
+                    }
                 }
+
                 if (!isOk)
                 {
-                    break;
+                    return $"規定列数={columnCnt} に一致しないか無効なデータが含まれています";
                 }
             }
-         
-            if (!isOk)
-            {
-                err += $":規定列数={columnCnt} に一致しないか無効なデータが含まれています";
-                parsed = null;
-            }
-            return err;
+            return null;
         }
 
-        static List<string[]> ParseCommon(TextFieldParser parser, string delimiter, string comment)
+        static (List<string[]>, string) ParseCommon(
+            TextFieldParser parser,
+            string delimiter,
+            string comment)
         {
             List<string[]> outList = new List<string[]>();
+
             parser.Delimiters = new string[] { delimiter };
             parser.CommentTokens = new string[] { comment };
             parser.HasFieldsEnclosedInQuotes = true;
@@ -341,11 +485,11 @@ namespace CSVParserLib
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine("Exception:" + e.Message);
-                    return null;
+                    Console.WriteLine("Error:" + e.Message);
+                    return (null, "Error:" + e.Message);
                 }
             }
-            return outList;
+            return (outList, null);
         }
 
     }
